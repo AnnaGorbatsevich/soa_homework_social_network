@@ -1,0 +1,40 @@
+erDiagram
+    USER ||--|| JWT_TOKEN : has
+    USER ||--o{ FOLLOWERS : has
+    FOLLOWERS ||--o{ USER : has
+    USER ||--|| USER_PROFILE : has
+    
+    USER {
+        UUID id PK
+        string username
+        string email
+        string password_hash
+        string phone
+        datetime created_at
+        datetime last_login
+    }
+    
+    JWT_TOKEN {
+        UUID id PK
+        UUID user_id FK
+        string token
+        datetime created_at
+        boolean is_valid
+    }
+    
+    FOLLOWERS {
+        UUID id PK
+        UUID follower_user_id FK
+        UUID following_user_id FK
+        datetime created_at
+    }
+    
+    USER_PROFILE {
+        UUID id PK
+        UUID user_id FK
+        string photo_url
+        string about_me
+        string location
+        datetime birthday
+        datetime updated_at
+    }
