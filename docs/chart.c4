@@ -1,0 +1,132 @@
+specification {
+  element actor
+  element system
+  element component
+}
+
+model {
+  ui = actor 'Users' {
+    description '
+        Условный UI
+      '
+    style {
+        shape person
+    }
+  }
+
+  network = system 'Network' {
+    component backend 'API' {
+      description '
+        Сервис перенаправляет запросы в другие сервисы и предоставляет REST API для UI
+      '
+    }
+
+    component users_service 'Users Service' {
+      description '
+        Данный сервис отвечает за регистрацию и аутентификацию пользователей, а так же хранит всю информацию по ним и их ролям.
+        Получает запросы от API сервиса по пользователю.
+      '
+    }
+
+    component stats_service 'Stats Service' {
+      description '
+        Данный сервис собирает статистику: подсчет просмотров, лайков, комментариев.
+        Сохраняет статистику по лайкам, просмотрам и комментариям, получая данные из брокера сообщений.
+        Получает запросы статистики от API сервиса.
+      '
+    }
+
+    component content_service 'Content Service' {
+      description '
+        Данный сервис отвечает за контент: посты и комментарии.
+        Получает запросы от API о создании/удалении/просмотре поста или комментария.
+      '
+    }
+
+    // UI requests data from the Backend
+    ui -> backend 'REST API'
+    backend -> users_service 'запрос по пользователю: регистрация, аутентификация, роли и тд
+    http'
+    backend -> stats_service 'запрос статистики
+    http'
+    backend -> content_service 'получить / добавить пост/комментарий
+    http'
+  }
+
+  users_database = actor 'Users Database' {
+    description '
+        База данных пользователей
+        Postgress
+      '
+    style {
+      color green
+      shape cylinder
+      icon tech:postgresql
+    }
+  }
+
+
+  stats_database = actor 'Stats Database' {
+    description '
+        База данных статистики
+        Clickhouse
+      '
+    style {
+      color green
+      shape cylinder
+      icon https://marketplace-assets.digitalocean.com/logos/clickhouse.svg
+    }
+  }
+
+  content_database = actor 'Content Database' {
+    description '
+        База данных постов и комментариев
+        Postgress
+      '
+    style {
+      color green
+      shape cylinder
+      icon tech:postgresql
+    }
+  }
+
+  kafka = actor 'Kafka' {
+    style {
+      color indigo
+      shape queue
+      icon tech:kafka
+      size xsmall
+    }
+  }
+
+  // Customer uses the UI
+  //ui -> network 'enjoys our product'
+  users_service -> users_database 'данные пользователя'
+  content_service -> content_database 'данные о постах и комментариях'
+  stats_service -> stats_database 'cтатистические данные'
+  kafka -> stats_service 'потребляет'
+  content_service -> kafka 'сохраняет'
+}
+
+views {
+
+  view index {
+    title 'Landscape view'
+
+    include *
+    style ui {
+      color muted
+    }
+  }
+
+ 
+
+  view of network {
+    include *
+
+    style ui {
+      color muted
+    }
+  }
+
+}
