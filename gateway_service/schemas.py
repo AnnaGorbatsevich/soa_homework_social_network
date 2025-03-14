@@ -1,5 +1,4 @@
 from pydantic import BaseModel, EmailStr, Field
-from datetime import date as dt
 
 class SUserRegister(BaseModel):
     email: EmailStr = Field(..., description="Электронная почта")
@@ -13,7 +12,7 @@ class SUserAuth(BaseModel):
 class SUpdateProfile(BaseModel):
     first_name: str = Field(..., description="Имя")
     last_name: str = Field(..., description="Фамилия")
-    date_of_birth: dt = Field(..., description="Дата рождения")
+    date_of_birth: str = Field(..., description="Дата рождения")
     phone: str = Field(..., description="Телефон")
     photo_url: str = Field(..., description="Ссылка на фотографию")
     about_me: str = Field(..., description="Описание")
