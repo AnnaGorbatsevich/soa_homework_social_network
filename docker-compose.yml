@@ -6,6 +6,10 @@ services:
 
     build: users_service/
 
+    command: python ./main.py
+
+    network_mode: host
+
     ports:
       - 1234:1234
 
