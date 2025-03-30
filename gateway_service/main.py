@@ -1,8 +1,14 @@
 import uvicorn
 
-from fastapi import FastAPI, Response, Request
+from fastapi import FastAPI, Response, Request, Depends
 from schemas import SUpdateProfile, SUserAuth, SUserRegister
+from fastapi.responses import JSONResponse
 import httpx
+from grpc_client.client import PostClient
+from google.protobuf.json_format import MessageToJson
+
+def get_grpc_client():
+    return PostClient()
 
 app = FastAPI()
 
@@ -38,6 +44,23 @@ async def get_profile(request: Request):
     url = "http://127.0.0.1:1234/profile/get_profile/"
     res = httpx.get(url, headers={"accept": "application/json"}, cookies=request.cookies)
     return res.json()
+
+
+@app.post("/posts/")
+async def create_post(
+    title: str,
+    description: str,
+    creator_id: int,
+    tags: list[str],
+    grpc_client: PostClient = Depends(get_grpc_client)
+):
+    print("POST CREATOR ID", creator_id)
+    try:
+        response = grpc_client.create_post(title, description, creator_id, tags, True)
+        print(MessageToJson(response))
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
 
 if __name__ == "__main__":
     uvicorn.run(

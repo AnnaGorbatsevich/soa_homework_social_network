@@ -1,0 +1,54 @@
+from concurrent import futures
+import grpc
+import logging
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from google.protobuf.timestamp_pb2 import Timestamp
+from datetime import datetime
+
+from .content_service_pb2_grpc import PostServiceServicer
+from .content_service_pb2 import (
+    PostResponse,
+    StatusResponse,
+    ListResponse
+)
+from .database.models import Post
+from .database.dao import PostDAO
+
+class PostService(PostServiceServicer):
+        
+    def _get_session(self):
+        return self.session_maker()
+            
+    def CreatePost(self, request, context):
+        print("Create post todo")
+        PostDAO.add(title=request.title,
+                           description=request.description,
+                           user_id=request.creator_id,
+                           is_private=request.private,
+                           tags="")
+        return PostResponse(
+            id=1,
+            title=request.title,
+            description=request.description,
+            creator_id=request.creator_id,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            tags=request.tags,
+            private=request.private
+        )
+        
+            
+    def DeletePost(self, request, context):
+        print("Detele post todo")
+
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    from .content_service_pb2_grpc import add_PostServiceServicer_to_server
+    add_PostServiceServicer_to_server(PostService(), server)
+    
+    
+    server.add_insecure_port('localhost:50051')
+    server.start()
+    print("gRPC сервер запущен на порту 50051")
+    server.wait_for_termination()
