@@ -5,6 +5,6 @@ class Post(Base):
     id: Mapped[int_pk]
     name: Mapped[str]
     description: Mapped[str_null_true]
-    user_id: Mapped[int_uniq]
+    user_id: Mapped[int]
     is_private: Mapped[bool]
     tags: Mapped[str]

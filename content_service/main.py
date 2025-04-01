@@ -28,19 +28,17 @@ class PostService(PostServiceServicer):
                            user_id=request.creator_id,
                            is_private=request.private,
                            tags="")
-        print(res)
         return PostResponse(
             id=res.id,
-            title=request.title,
-            description=request.description,
-            creator_id=request.creator_id,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            tags=request.tags,
-            private=request.private
+            title=res.name,
+            description=res.description,
+            creator_id=res.user_id,
+            created_at=res.created_at,
+            updated_at=res.updated_at,
+            tags=res.tags,
+            private=res.is_private
         )
-        
-            
+
     def DeletePost(self, request, context):
         print("Detele post todo")
 
