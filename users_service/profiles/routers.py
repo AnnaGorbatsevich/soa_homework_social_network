@@ -17,3 +17,7 @@ async def get_profile(user_data: User = Depends(Auth.get_current_user)):
 async def update_profile(profile_data: SUpdateProfile, user_data: User = Depends(Auth.get_current_user)):
     profile_module.update(profile_data, user_data)
     return {'message': ' Информация о профиле текущего юзера TODO'}
+
+@router.get("/get_user_id/")
+async def get_profile(user_id: int = Depends(Auth.get_user_id)):
+    return str(user_id)

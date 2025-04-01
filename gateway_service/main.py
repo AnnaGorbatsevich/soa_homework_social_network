@@ -43,13 +43,19 @@ async def get_profile(request: Request):
     return res.json()
 
 
+async def get_user_id(request: Request):
+    url = "http://127.0.0.1:1234/profile/get_user_id/"
+    res = httpx.get(url, headers={"accept": "application/json"}, cookies=request.cookies)
+    return int(res)
+
+
 @app.post("/posts/")
-async def create_post(
+async def create_post(request: Request,
     title: str,
     description: str,
-    creator_id: int,
     tags: list[str],
 ):
+    creator_id = get_user_id(request)
     grpc_client = PostClient()
     try:
         response = await grpc_client.create_post(title, description, creator_id, tags, True)
@@ -58,10 +64,10 @@ async def create_post(
         raise BaseException(str(e))
     
 @app.get("/posts/")
-async def get_post(
-    user_id: int, 
+async def get_post(request: Request,
     post_id: int
 ):
+    user_id = get_user_id(request)
     grpc_client = PostClient()
     try:
         response = await grpc_client.get_post(post_id, user_id)
@@ -71,8 +77,10 @@ async def get_post(
     
 @app.delete("/posts/")
 async def delete_post(
+    request: Request,
     post_id: int
 ):
+    user_id = get_user_id(request)
     grpc_client = PostClient()
     try:
         await grpc_client.delete_post(post_id)
