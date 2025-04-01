@@ -5,30 +5,32 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from google.protobuf.timestamp_pb2 import Timestamp
 from datetime import datetime
+import asyncio
 
-from .content_service_pb2_grpc import PostServiceServicer
-from .content_service_pb2 import (
+from content_service_pb2_grpc import PostServiceServicer
+from content_service_pb2 import (
     PostResponse,
     StatusResponse,
     ListResponse
 )
-from .database.models import Post
-from .database.dao import PostDAO
+from database.models import Post
+from database.dao import PostDAO
 
 class PostService(PostServiceServicer):
         
     def _get_session(self):
         return self.session_maker()
             
-    def CreatePost(self, request, context):
+    async def CreatePost(self, request, context):
         print("Create post todo")
-        PostDAO.add(title=request.title,
+        res = await PostDAO.add(name=request.title,
                            description=request.description,
                            user_id=request.creator_id,
                            is_private=request.private,
                            tags="")
+        print(res)
         return PostResponse(
-            id=1,
+            id=res.id,
             title=request.title,
             description=request.description,
             creator_id=request.creator_id,
@@ -42,13 +44,16 @@ class PostService(PostServiceServicer):
     def DeletePost(self, request, context):
         print("Detele post todo")
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    from .content_service_pb2_grpc import add_PostServiceServicer_to_server
+async def serve():
+    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
+    from content_service_pb2_grpc import add_PostServiceServicer_to_server
     add_PostServiceServicer_to_server(PostService(), server)
     
     
     server.add_insecure_port('localhost:50051')
-    server.start()
+    await server.start()
     print("gRPC сервер запущен на порту 50051")
-    server.wait_for_termination()
+    await server.wait_for_termination()
+    
+if __name__ == '__main__':
+    asyncio.run(serve())

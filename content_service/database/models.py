@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped
-from .database import Base, str_uniq, int_pk, int_uniq, date_null_true, str_null_true
+from database.database import Base, str_uniq, int_pk, int_uniq, date_null_true, str_null_true
 
 class Post(Base):
     id: Mapped[int_pk]

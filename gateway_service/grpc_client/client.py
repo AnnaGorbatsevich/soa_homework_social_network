@@ -12,12 +12,10 @@ from .content_service_pb2 import (
 
 class PostClient:
     def __init__(self, host='localhost:50051'):
-        # Создаем канал для подключения к gRPC серверу
-        self.channel = grpc.insecure_channel(host)
-        # Создаем stub для взаимодействия с сервисом
+        self.channel = grpc.aio.insecure_channel(host)
         self.stub = PostServiceStub(self.channel)
     
-    def create_post(self, title: str, description: str, creator_id: int, 
+    async def create_post(self, title: str, description: str, creator_id: int, 
                    tags: list[str], private: bool = False):
         print("CREATOR ID", creator_id)
         request = PostRequest(
@@ -27,7 +25,7 @@ class PostClient:
             tags=tags,
             private=True
         )
-        return self.stub.CreatePost(request)
+        return await self.stub.CreatePost(request)
     
     def delete_post(self, post_id: int):
         request = DeleteRequest(post_id=post_id)

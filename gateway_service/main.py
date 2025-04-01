@@ -7,9 +7,6 @@ import httpx
 from grpc_client.client import PostClient
 from google.protobuf.json_format import MessageToJson
 
-def get_grpc_client():
-    return PostClient()
-
 app = FastAPI()
 
 @app.post("/register")
@@ -52,11 +49,11 @@ async def create_post(
     description: str,
     creator_id: int,
     tags: list[str],
-    grpc_client: PostClient = Depends(get_grpc_client)
 ):
+    grpc_client = PostClient()
     print("POST CREATOR ID", creator_id)
     try:
-        response = grpc_client.create_post(title, description, creator_id, tags, True)
+        response = await grpc_client.create_post(title, description, creator_id, tags, True)
         print(MessageToJson(response))
         return MessageToJson(response)
     except Exception as e:
@@ -66,6 +63,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host='127.0.0.1',
-        port=1235,
+        port=1236,
         reload=True
     )

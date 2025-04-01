@@ -1,7 +1,7 @@
 from .models import Post
 
 from sqlalchemy.future import select
-from .database import async_session_maker
+from database.database import async_session_maker
 from sqlalchemy.exc import SQLAlchemyError
 
 
