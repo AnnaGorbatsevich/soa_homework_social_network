@@ -22,7 +22,7 @@ class PostService(PostServiceServicer):
         return self.session_maker()
             
     async def CreatePost(self, request, context):
-        print("Create post todo")
+        print("Create post")
         res = await PostDAO.add(name=request.title,
                            description=request.description,
                            user_id=request.creator_id,
@@ -38,11 +38,30 @@ class PostService(PostServiceServicer):
             tags=res.tags,
             private=res.is_private
         )
+        
+    async def GetPost(self, request, context):
+        print("Get post")
+        res = await PostDAO.find_by_id(request.post_id)
+        return PostResponse(
+            id=res.id,
+            title=res.name,
+            description=res.description,
+            creator_id=res.user_id,
+            created_at=res.created_at,
+            updated_at=res.updated_at,
+            tags=res.tags,
+            private=res.is_private
+        )
 
-    def DeletePost(self, request, context):
-        print("Detele post todo")
+    async def DeletePost(self, request, context):
+        print("Delete post todo")
+        await PostDAO.delete(request.post_id)
+        return StatusResponse(
+            success = True,
+            message = "OK"
+        )
 
-async def serve():
+async def main():
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     from content_service_pb2_grpc import add_PostServiceServicer_to_server
     add_PostServiceServicer_to_server(PostService(), server)
@@ -54,4 +73,4 @@ async def serve():
     await server.wait_for_termination()
     
 if __name__ == '__main__':
-    asyncio.run(serve())
+    asyncio.run(main())

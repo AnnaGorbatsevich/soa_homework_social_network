@@ -51,11 +51,32 @@ async def create_post(
     tags: list[str],
 ):
     grpc_client = PostClient()
-    print("POST CREATOR ID", creator_id)
     try:
         response = await grpc_client.create_post(title, description, creator_id, tags, True)
-        print(MessageToJson(response))
         return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.get("/posts/")
+async def get_post(
+    user_id: int, 
+    post_id: int
+):
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.get_post(post_id, user_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.delete("/posts/")
+async def delete_post(
+    post_id: int
+):
+    grpc_client = PostClient()
+    try:
+        await grpc_client.delete_post(post_id)
+        return {}
     except Exception as e:
         raise BaseException(str(e))
 
@@ -66,3 +87,4 @@ if __name__ == "__main__":
         port=1236,
         reload=True
     )
+    

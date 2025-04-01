@@ -27,11 +27,11 @@ class PostClient:
         )
         return await self.stub.CreatePost(request)
     
-    def delete_post(self, post_id: int):
+    async def delete_post(self, post_id: int):
         request = DeleteRequest(post_id=post_id)
-        return self.stub.DeletePost(request)
+        return await self.stub.DeletePost(request)
     
-    def update_post(self, post_id: int, title: str = None, 
+    async def update_post(self, post_id: int, title: str = None, 
                    description: str = None, tags: list[str] = None,
                    private: bool = None):
         request = UpdateRequest(
@@ -41,20 +41,11 @@ class PostClient:
             tags=tags,
             private=private
         )
-        return self.stub.UpdatePost(request)
+        return await self.stub.UpdatePost(request)
     
-    def get_post(self, post_id: int, viewer_id: int = None):
+    async def get_post(self, post_id: int, viewer_id: int = None):
         request = GetRequest(
             post_id=post_id,
             viewer_id=viewer_id
         )
-        return self.stub.GetPost(request)
-    
-    def list_posts(self, page: int = 1, limit: int = 10, 
-                  viewer_id: int = None):
-        request = ListRequest(
-            page=page,
-            limit=limit,
-            viewer_id=viewer_id
-        )
-        return self.stub.ListPosts(request)
+        return await self.stub.GetPost(request)
