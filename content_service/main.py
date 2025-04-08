@@ -42,6 +42,17 @@ class PostService(PostServiceServicer):
     async def GetPost(self, request, context):
         print("Get post")
         res = await PostDAO.find_by_id(request.post_id)
+        if res is None:
+            return PostResponse(
+            id=-1,
+            title="",
+            description="",
+            creator_id=-1,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            tags=[""],
+            private=False
+        )
         return PostResponse(
             id=res.id,
             title=res.name,
@@ -55,10 +66,15 @@ class PostService(PostServiceServicer):
 
     async def DeletePost(self, request, context):
         print("Delete post todo")
-        await PostDAO.delete(request.post_id)
+        res = await PostDAO.delete(request.post_id, -1)
+        if "error" in res:
+            return StatusResponse(
+                success = False,
+                message = res["error"]
+            )
         return StatusResponse(
             success = True,
-            message = "OK"
+            message = res["message"]
         )
 
 async def main():

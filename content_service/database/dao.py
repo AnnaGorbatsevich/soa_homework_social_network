@@ -35,16 +35,17 @@ class BaseDAO:
                 return new_instance
 
     @classmethod
-    async def delete(cls, post_id):
+    async def delete(cls, post_id, user_id):
+        if (await cls.find_by_id(post_id)) is None:
+            return {"error": "Такого поста не существует"}
         async with async_session_maker() as session:
             async with session.begin():
-                post = await db.execute(
+                post = await session.execute(
                     select(Post).where(Post.id == post_id)
                 )
                 post = post.scalar_one_or_none()
-                # Удаляем посты
-                session.delete(post)
-                session.commit()
+                await session.delete(post)
+                await session.commit()
                 return {"message": "Пост успешно удален"}
                 
     @staticmethod

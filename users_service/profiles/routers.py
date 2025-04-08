@@ -10,7 +10,9 @@ profile_module = Profile()
 
 @router.get("/get_profile/")
 async def get_profile(user_data: User = Depends(Auth.get_current_user)):
+    print("ID: ", user_data.id)
     profile = await profile_module.get(user_data.id)
+    
     return profile
 
 @router.post("/update_profile/")

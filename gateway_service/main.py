@@ -46,7 +46,7 @@ async def get_profile(request: Request):
 async def get_user_id(request: Request):
     url = "http://127.0.0.1:1234/profile/get_user_id/"
     res = httpx.get(url, headers={"accept": "application/json"}, cookies=request.cookies)
-    return int(res)
+    return int(res.json())
 
 
 @app.post("/posts/")
@@ -55,7 +55,7 @@ async def create_post(request: Request,
     description: str,
     tags: list[str],
 ):
-    creator_id = get_user_id(request)
+    creator_id = await get_user_id(request)
     grpc_client = PostClient()
     try:
         response = await grpc_client.create_post(title, description, creator_id, tags, True)
@@ -67,10 +67,14 @@ async def create_post(request: Request,
 async def get_post(request: Request,
     post_id: int
 ):
-    user_id = get_user_id(request)
+    user_id = await get_user_id(request)
     grpc_client = PostClient()
     try:
         response = await grpc_client.get_post(post_id, user_id)
+        if response.id == -1:
+            return {"error": "Пост не найден"}
+        if response.id == -2:
+            return {"error": "Вы не можете удалить чужой пост"}
         return MessageToJson(response)
     except Exception as e:
         raise BaseException(str(e))
@@ -80,11 +84,12 @@ async def delete_post(
     request: Request,
     post_id: int
 ):
-    user_id = get_user_id(request)
+    user_id = await get_user_id(request)
     grpc_client = PostClient()
     try:
-        await grpc_client.delete_post(post_id)
-        return {}
+        res = await grpc_client.delete_post(post_id)
+        print(res)
+        return res.message
     except Exception as e:
         raise BaseException(str(e))
 
