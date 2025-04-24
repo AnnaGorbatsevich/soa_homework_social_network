@@ -23,7 +23,7 @@ class PostClient:
             description=description,
             creator_id=int(creator_id),
             tags=tags,
-            private=True
+            private=private
         )
         return await self.stub.CreatePost(request)
     

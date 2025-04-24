@@ -53,12 +53,13 @@ async def get_user_id(request: Request):
 async def create_post(request: Request,
     title: str,
     description: str,
+    is_private: bool,
     tags: list[str],
 ):
     creator_id = await get_user_id(request)
     grpc_client = PostClient()
     try:
-        response = await grpc_client.create_post(title, description, creator_id, tags, True)
+        response = await grpc_client.create_post(title, description, creator_id, tags, is_private)
         return MessageToJson(response)
     except Exception as e:
         raise BaseException(str(e))
@@ -74,7 +75,7 @@ async def get_post(request: Request,
         if response.id == -1:
             return {"error": "Пост не найден"}
         if response.id == -2:
-            return {"error": "Вы не можете удалить чужой пост"}
+            return {"error": "Вы не можете посмотреть приватный пост"}
         return MessageToJson(response)
     except Exception as e:
         raise BaseException(str(e))

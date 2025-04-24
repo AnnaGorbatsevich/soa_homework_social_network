@@ -44,15 +44,26 @@ class PostService(PostServiceServicer):
         res = await PostDAO.find_by_id(request.post_id)
         if res is None:
             return PostResponse(
-            id=-1,
-            title="",
-            description="",
-            creator_id=-1,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-            tags=[""],
-            private=False
-        )
+                id=-1,
+                title="",
+                description="",
+                creator_id=-1,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                tags=[""],
+                private=False
+            )
+        if res.user_id != request.viewer_id and res.is_private:
+            return PostResponse(
+                id=-2,
+                title="",
+                description="",
+                creator_id=-1,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                tags=[""],
+                private=False
+            )
         return PostResponse(
             id=res.id,
             title=res.name,
