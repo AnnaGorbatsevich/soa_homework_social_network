@@ -93,6 +93,60 @@ async def delete_post(
         return res.message
     except Exception as e:
         raise BaseException(str(e))
+    
+@app.post("/comment/")
+async def add_comment(request: Request,
+    source_type: str,
+    source_id: int,
+    description: str,
+):
+    creator_id = await get_user_id(request)
+    grpc_client = PostClient()
+    if source_type != "comment" and source_type != "post":
+        return {"message": "source_type должно быть post или comment"}
+    try:
+        response = await grpc_client.add_comment(source_type, description, source_id, creator_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.get("/comment/")
+async def get_comment(request: Request,
+    comment_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.get_comment(comment_id, user_id)
+        if response.id == -1:
+            return {"error": "Комментарий не найден"}
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.post("/like_comment/")
+async def like_comment(request: Request,
+    comment_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.add_comment_like(comment_id, user_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.post("/like_post/")
+async def like_post(request: Request,
+    post_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.add_post_like(post_id, user_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
 
 if __name__ == "__main__":
     uvicorn.run(

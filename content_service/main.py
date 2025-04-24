@@ -11,10 +11,12 @@ from content_service_pb2_grpc import PostServiceServicer
 from content_service_pb2 import (
     PostResponse,
     StatusResponse,
-    ListResponse
+    ListResponse,
+    LikeResponse,
+    CommentResponse
 )
 from database.models import Post
-from database.dao import PostDAO
+from database.dao import PostDAO, CommentDAO, LikeDAO
 
 class PostService(PostServiceServicer):
         
@@ -86,6 +88,59 @@ class PostService(PostServiceServicer):
         return StatusResponse(
             success = True,
             message = res["message"]
+        )
+    
+    async def AddComment(self, request, context):
+        print("Add Comment")
+        res = await CommentDAO.add(source_type = request.source_type,
+                                    description = request.description,
+                                    source_id = request.source_id,
+                                    user_id = request.user_id)
+        return CommentResponse(
+            id = res.id,
+            user_id = res.user_id,
+            source_id = res.source_id,
+            source_type = res.source_type,
+            description = res.description
+        )
+    
+    async def AddCommentLike(self, request, context):
+        print("Add Comment Like")
+        res = await LikeDAO.add(source_type = "comment",
+                                    source_id = request.source_id,
+                                    user_id = request.user_id)
+        return LikeResponse(
+            success = True,
+            message = "OK",
+        )
+    
+    async def AddPostLike(self, request, context):
+        print("Add Post Like")
+        res = await LikeDAO.add(source_type = "post",
+                                    source_id = request.source_id,
+                                    user_id = request.user_id)
+        return LikeResponse(
+            success = True,
+            message = "OK",
+        )
+    
+    async def GetComment(self, request, context):
+        print("Get Comment")
+        res = await CommentDAO.find_by_id(request.comment_id)
+        if res is None:
+            return CommentResponse(
+                id=-1,
+                user_id=-1,
+                source_id=-1,
+                source_type="",
+                description="",
+            )
+        return CommentResponse(
+            id=res.id,
+            user_id=res.user_id,
+            source_id=-res.source_id,
+            source_type=res.source_type,
+            description=res.description,
         )
 
 async def main():
