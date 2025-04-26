@@ -13,6 +13,12 @@ app = FastAPI()
 async def register(user_data: SUserRegister):
     url = "http://127.0.0.1:1234/auth/register/"
     res = httpx.post(url, json=user_data.dict(), headers={"accept": "application/json"})
+    event = {
+        'event_type': 'registration',
+        'user_id': res.id,
+        'timestamp': datetime.now().isoformat()
+    }
+    self.producer.send('users', value=event)
     return res.json()
 
 @app.post("/login")

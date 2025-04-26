@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from google.protobuf.timestamp_pb2 import Timestamp
 from datetime import datetime
 import asyncio
+from kafka import KafkaProducer
 
 from content_service_pb2_grpc import PostServiceServicer
 from content_service_pb2 import (
@@ -19,6 +20,12 @@ from database.models import Post
 from database.dao import PostDAO, CommentDAO, LikeDAO
 
 class PostService(PostServiceServicer):
+    
+    def __init__(self):
+        self.producer = KafkaProducer(
+            bootstrap_servers='kafka_b:9094',
+            value_serializer=lambda x: json.dumps(x).encode('utf-8')
+        )
         
     def _get_session(self):
         return self.session_maker()
@@ -30,6 +37,15 @@ class PostService(PostServiceServicer):
                            user_id=request.creator_id,
                            is_private=request.private,
                            tags="")
+        
+        event = {
+            'event_type': 'post_created',
+            'post_id': res.id,
+            'author_id': request.user_id,
+            'description': request.description,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.producer.send('posts', value=event)
         return PostResponse(
             id=res.id,
             title=res.name,
@@ -96,6 +112,14 @@ class PostService(PostServiceServicer):
                                     description = request.description,
                                     source_id = request.source_id,
                                     user_id = request.user_id)
+        event = {
+            'event_type': 'comment_created',
+            'comment_id': res.id,
+            'author_id': request.user_id,
+            'description': request.description,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.producer.send('comment', value=event)
         return CommentResponse(
             id = res.id,
             user_id = res.user_id,
@@ -109,6 +133,12 @@ class PostService(PostServiceServicer):
         res = await LikeDAO.add(source_type = "comment",
                                     source_id = request.source_id,
                                     user_id = request.user_id)
+        event = {
+            'event_type': 'like',
+            'author_id': request.user_id,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.producer.send('like', value=event)
         return LikeResponse(
             success = True,
             message = "OK",
@@ -116,6 +146,12 @@ class PostService(PostServiceServicer):
     
     async def AddPostLike(self, request, context):
         print("Add Post Like")
+        event = {
+            'event_type': 'like',
+            'author_id': request.user_id,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.producer.send('like', value=event)
         res = await LikeDAO.add(source_type = "post",
                                     source_id = request.source_id,
                                     user_id = request.user_id)
