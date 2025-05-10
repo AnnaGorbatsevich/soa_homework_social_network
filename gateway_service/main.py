@@ -1,8 +1,11 @@
 import uvicorn
 
-from fastapi import FastAPI, Response, Request
+from fastapi import FastAPI, Response, Request, Depends
 from schemas import SUpdateProfile, SUserAuth, SUserRegister
+from fastapi.responses import JSONResponse
 import httpx
+from grpc_client.client import PostClient
+from google.protobuf.json_format import MessageToJson
 
 app = FastAPI()
 
@@ -39,10 +42,63 @@ async def get_profile(request: Request):
     res = httpx.get(url, headers={"accept": "application/json"}, cookies=request.cookies)
     return res.json()
 
+
+async def get_user_id(request: Request):
+    url = "http://127.0.0.1:1234/profile/get_user_id/"
+    res = httpx.get(url, headers={"accept": "application/json"}, cookies=request.cookies)
+    return int(res.json())
+
+
+@app.post("/posts/")
+async def create_post(request: Request,
+    title: str,
+    description: str,
+    is_private: bool,
+    tags: list[str],
+):
+    creator_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.create_post(title, description, creator_id, tags, is_private)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.get("/posts/")
+async def get_post(request: Request,
+    post_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.get_post(post_id, user_id)
+        if response.id == -1:
+            return {"error": "Пост не найден"}
+        if response.id == -2:
+            return {"error": "Вы не можете посмотреть приватный пост"}
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.delete("/posts/")
+async def delete_post(
+    request: Request,
+    post_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        res = await grpc_client.delete_post(post_id)
+        print(res)
+        return res.message
+    except Exception as e:
+        raise BaseException(str(e))
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host='127.0.0.1',
-        port=1235,
+        port=1236,
         reload=True
     )
+    
