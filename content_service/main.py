@@ -7,6 +7,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from datetime import datetime
 import asyncio
 from kafka import KafkaProducer
+import json
 
 from content_service_pb2_grpc import PostServiceServicer
 from content_service_pb2 import (
@@ -23,7 +24,7 @@ class PostService(PostServiceServicer):
     
     def __init__(self):
         self.producer = KafkaProducer(
-            bootstrap_servers='kafka_b:9094',
+            bootstrap_servers=['localhost:29092'],
             value_serializer=lambda x: json.dumps(x).encode('utf-8')
         )
         
@@ -41,7 +42,7 @@ class PostService(PostServiceServicer):
         event = {
             'event_type': 'post_created',
             'post_id': res.id,
-            'author_id': request.user_id,
+            'author_id': res.user_id,
             'description': request.description,
             'timestamp': datetime.now().isoformat()
         }
