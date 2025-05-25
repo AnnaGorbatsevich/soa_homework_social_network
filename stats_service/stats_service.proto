@@ -1,0 +1,17 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package social_network;
+
+service StatsService {
+    rpc GetStats(GetStatsRequest) returns (GetStatsResponse);
+}
+
+message GetStatsRequest {
+    int32 post_id = 1;
+}
+
+message GetStatsResponse {
+    int32 likes = 1;
+    int32 comments = 2;
+}
