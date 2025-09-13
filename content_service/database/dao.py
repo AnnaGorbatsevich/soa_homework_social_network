@@ -1,4 +1,4 @@
-from .models import Post
+from .models import Post, Comment, Like
 
 from sqlalchemy.future import select
 from database.database import async_session_maker
@@ -71,3 +71,9 @@ class BaseDAO:
  
 class PostDAO(BaseDAO):
     model = Post
+    
+class CommentDAO(BaseDAO):
+    model = Comment
+    
+class LikeDAO(BaseDAO):
+    model = Like
