@@ -13,6 +13,13 @@ app = FastAPI()
 async def register(user_data: SUserRegister):
     url = "http://127.0.0.1:1234/auth/register/"
     res = httpx.post(url, json=user_data.dict(), headers={"accept": "application/json"})
+    if "id" in res.json():
+        event = {
+            'event_type': 'registration',
+            'user_id': res.id,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.producer.send('users', value=event)
     return res.json()
 
 @app.post("/login")
@@ -91,6 +98,60 @@ async def delete_post(
         res = await grpc_client.delete_post(post_id)
         print(res)
         return res.message
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.post("/comment/")
+async def add_comment(request: Request,
+    source_type: str,
+    source_id: int,
+    description: str,
+):
+    creator_id = await get_user_id(request)
+    grpc_client = PostClient()
+    if source_type != "comment" and source_type != "post":
+        return {"message": "source_type должно быть post или comment"}
+    try:
+        response = await grpc_client.add_comment(source_type, description, source_id, creator_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.get("/comment/")
+async def get_comment(request: Request,
+    comment_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.get_comment(comment_id, user_id)
+        if response.id == -1:
+            return {"error": "Комментарий не найден"}
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.post("/like_comment/")
+async def like_comment(request: Request,
+    comment_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.add_comment_like(comment_id, user_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.post("/like_post/")
+async def like_post(request: Request,
+    post_id: int
+):
+    user_id = await get_user_id(request)
+    grpc_client = PostClient()
+    try:
+        response = await grpc_client.add_post_like(post_id, user_id)
+        return MessageToJson(response)
     except Exception as e:
         raise BaseException(str(e))
 

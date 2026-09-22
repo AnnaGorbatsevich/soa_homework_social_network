@@ -7,7 +7,10 @@ from .content_service_pb2 import (
     DeleteRequest,
     UpdateRequest,
     GetRequest,
-    ListRequest
+    ListRequest,
+    LikeRequest,
+    CommentRequest,
+    GetCommentRequest
 )
 
 class PostClient:
@@ -49,3 +52,36 @@ class PostClient:
             viewer_id=viewer_id
         )
         return await self.stub.GetPost(request)
+    
+    async def add_comment(self, source_type, description, source_id, user_id):
+        request = CommentRequest(
+            source_type=source_type,
+            description=description,
+            source_id = source_id,
+            user_id = user_id
+        )
+        return await self.stub.AddComment(request)
+    
+    async def add_comment_like(self, comment_id: int, user_id: int = None):
+        request = LikeRequest(
+            source_id=comment_id,
+            user_id=user_id,
+            source_type="comment"
+        )
+        return await self.stub.AddCommentLike(request)
+    
+    async def add_post_like(self, post_id: int, user_id: int = None):
+        request = LikeRequest(
+            source_id=post_id,
+            user_id=user_id,
+            source_type="post"
+        )
+        return await self.stub.AddPostLike(request)
+    
+    async def get_comment(self, comment_id: int, user_id: int):
+        request = GetCommentRequest(
+            comment_id=comment_id,
+            user_id=user_id
+        )
+        print("Client get comment")
+        return await self.stub.GetComment(request)
