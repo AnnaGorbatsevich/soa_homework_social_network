@@ -1,0 +1,64 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package social_network;
+
+service PostService {
+    rpc CreatePost(PostRequest) returns (PostResponse);
+    rpc DeletePost(DeleteRequest) returns (StatusResponse);
+    rpc UpdatePost(UpdateRequest) returns (PostResponse);
+    rpc GetPost(GetRequest) returns (PostResponse);
+    rpc ListPosts(ListRequest) returns (ListResponse);
+}
+
+message PostRequest {
+    string title = 1;
+    string description = 2;
+    int32 creator_id = 3;
+    repeated string tags = 4;
+    bool private = 5;
+}
+
+message PostResponse {
+    int32 id = 1;
+    string title = 2;
+    string description = 3;
+    int32 creator_id = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    repeated string tags = 7;
+    bool private = 8;
+}
+
+message DeleteRequest {
+    int32 post_id = 1;
+}
+
+message UpdateRequest {
+    int32 post_id = 1;
+    string title = 2;
+    string description = 3;
+    repeated string tags = 4;
+    bool private = 5;
+}
+
+message GetRequest {
+    int32 post_id = 1;
+    int32 viewer_id = 2;
+}
+
+message ListRequest {
+    int32 page = 1;
+    int32 limit = 2;
+    int32 viewer_id = 3;
+}
+
+message ListResponse {
+    repeated PostResponse posts = 1;
+    int32 total_count = 2;
+}
+
+message StatusResponse {
+    bool success = 1;
+    string message = 2;
+}

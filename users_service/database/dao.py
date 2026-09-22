@@ -16,6 +16,7 @@ class BaseDAO:
     @classmethod
     async def find(cls, **filter_by):
         async with async_session_maker() as session:
+            print(filter_by)
             query = select(cls.model).filter_by(**filter_by)
            
             result = await session.execute(query)
