@@ -13,6 +13,12 @@ from .content_service_pb2 import (
     GetCommentRequest
 )
 
+
+from .stats_service_pb2_grpc import StatsServiceStub
+from .stats_service_pb2 import (
+    GetStatsRequest,
+)
+
 class PostClient:
     def __init__(self, host='localhost:50051'):
         self.channel = grpc.aio.insecure_channel(host)
@@ -85,3 +91,15 @@ class PostClient:
         )
         print("Client get comment")
         return await self.stub.GetComment(request)
+
+
+class StatsClient:
+    def __init__(self, host='localhost:50052'):
+        self.channel = grpc.aio.insecure_channel(host)
+        self.stub = StatsServiceStub(self.channel)
+    
+    async def get_stats(self, post_id: int):
+        request = GetStatsRequest(
+            post_id = post_id,
+        )
+        return await self.stub.GetStats(request)

@@ -4,7 +4,7 @@ from fastapi import FastAPI, Response, Request, Depends
 from schemas import SUpdateProfile, SUserAuth, SUserRegister
 from fastapi.responses import JSONResponse
 import httpx
-from grpc_client.client import PostClient
+from grpc_client.client import PostClient, StatsClient
 from google.protobuf.json_format import MessageToJson
 
 app = FastAPI()
@@ -151,6 +151,17 @@ async def like_post(request: Request,
     grpc_client = PostClient()
     try:
         response = await grpc_client.add_post_like(post_id, user_id)
+        return MessageToJson(response)
+    except Exception as e:
+        raise BaseException(str(e))
+    
+@app.post("/get_statistics/")
+async def get_statistic(request: Request,
+    post_id: int
+):
+    grpc_client = StatsClient()
+    try:
+        response = await grpc_client.get_stats(post_id)
         return MessageToJson(response)
     except Exception as e:
         raise BaseException(str(e))

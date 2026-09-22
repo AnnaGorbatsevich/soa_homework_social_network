@@ -117,7 +117,7 @@ class PostService(PostServiceServicer):
             'event_type': 'comment_created',
             'comment_id': res.id,
             'author_id': request.user_id,
-            'description': request.description,
+            'source_id': request.source_id,
             'timestamp': datetime.now().isoformat()
         }
         self.producer.send('comment', value=event)
@@ -137,6 +137,7 @@ class PostService(PostServiceServicer):
         event = {
             'event_type': 'like',
             'author_id': request.user_id,
+            'source_id': request.source_id,
             'timestamp': datetime.now().isoformat()
         }
         self.producer.send('like', value=event)
@@ -150,6 +151,7 @@ class PostService(PostServiceServicer):
         event = {
             'event_type': 'like',
             'author_id': request.user_id,
+            'source_id': request.source_id,
             'timestamp': datetime.now().isoformat()
         }
         self.producer.send('like', value=event)
