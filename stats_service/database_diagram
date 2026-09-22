@@ -1,0 +1,31 @@
+erDiagram
+    POST ||--o{ POST_METRIC : has
+    POST_METRIC {
+        UUID id PK
+        UUID post_id FK
+        int views_count
+        int likes_count
+        int comments_count
+        datetime last_updated
+    }
+    
+    USER ||--o{ USER_METRIC : has
+    USER_METRIC {
+        UUID id PK
+        UUID user_id FK
+        int total_posts
+        int total_likes
+        int total_comments
+        datetime last_updated
+    }
+
+    COMMENT ||--o{ COMMENT_METRIC : has
+    
+    COMMENT_METRIC {
+        UUID id PK
+        UUID comment_id FK
+        int total_posts
+        int total_likes
+        int total_comments
+        datetime last_updated
+    }

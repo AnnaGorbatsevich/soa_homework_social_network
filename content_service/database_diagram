@@ -1,0 +1,35 @@
+erDiagram
+    POST ||--o{ COMMENT : contains
+    COMMENT ||--o{ COMMENT : contains
+    POST ||--o{ LIKE : contains
+    USER ||--o{ COMMENT : has
+
+    USER ||--o{ LIKE : has
+    
+    
+    POST {
+        UUID id PK
+        UUID author_id FK
+        string content
+        datetime created_at
+        datetime updated_at
+    }
+    
+    COMMENT {
+        UUID id PK
+        UUID media_id FK
+        UUID author_id FK
+        string media_type
+        string content
+        datetime created_at
+        datetime updated_at
+    }
+    
+    LIKE {
+        UUID id PK
+        UUID media_id FK
+        UUID author_id FK
+        string media_type
+        string media_url
+        datetime created_at
+    }
